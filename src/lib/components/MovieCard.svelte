@@ -6,13 +6,18 @@
     movie,
     showActions = true,
     ondelete,
-    onedit
+    onedit,
+    onrate
   }: {
     movie: Movie;
     showActions?: boolean;
     ondelete?: (id: string) => void;
     onedit?: (movie: Movie) => void;
+    onrate?: (movie: Movie, rating: number) => void;
   } = $props();
+
+  const stars = [1, 2, 3, 4, 5];
+  let currentRating = $derived(movie.rating ?? 0);
 
   // Handlers: ejecutan callbacks del padre directamente
   function handleDelete() {
@@ -21,6 +26,10 @@
 
   function handleEdit() {
     onedit?.(movie);
+  }
+
+  function handleRate(rating: number) {
+    onrate?.(movie, rating);
   }
 </script>
 
@@ -49,20 +58,34 @@
       {/if}
     </div>
 
+    <div class="flex items-center gap-1" aria-label={`Rating actual: ${currentRating} de 5`}>
+      {#each stars as star}
+        <button
+          type="button"
+          class={`text-xl leading-none transition hover:scale-110 ${
+            star <= currentRating ? 'text-amber-500' : 'text-slate-300 hover:text-amber-400'
+          }`}
+          aria-label={`Calificar con ${star} de 5`}
+          title={`Calificar con ${star} de 5`}
+          onclick={() => handleRate(star)}
+        >
+          {star <= currentRating ? '★' : '☆'}
+        </button>
+      {/each}
+    </div>
+
     {#if showActions}
       <div class="mt-3 flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           class="w-full rounded border border-slate-300 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
-          onclick={handleEdit}
-        >
+          onclick={handleEdit}>
           Editar
         </button>
         <button
           type="button"
           class="w-full rounded border border-red-500 px-3 py-2 text-red-600 transition hover:bg-red-50"
-          onclick={handleDelete}
-        >
+          onclick={handleDelete}>
           Eliminar
         </button>
       </div>
