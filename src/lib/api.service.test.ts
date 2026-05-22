@@ -30,6 +30,10 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 // Mock del módulo $app/environment
 vi.mock('$app/environment', () => ({ browser: true }));
 
+vi.mock('$env/static/public', () => ({
+  PUBLIC_API_URL: 'https://mivideoteca-backend-saperez.onrender.com'
+}));
+
 describe('API Service - Autenticación', () => {
   beforeEach(() => {
     // Limpiar mocks antes de cada test
@@ -71,7 +75,7 @@ describe('API Service - Autenticación', () => {
       
       // Verificamos la llamada a fetch
       const callArgs = (globalThis.fetch as any).mock.calls[0];
-      expect(callArgs[0]).toBe('http://localhost:3000/api/auth/login');
+      expect(callArgs[0]).toBe('https://mivideoteca-backend-saperez.onrender.com/api/auth/login');
       expect(callArgs[1].method).toBe('POST');
       expect(callArgs[1].body).toBe(JSON.stringify({ email, password }));
     });
@@ -148,7 +152,7 @@ describe('API Service - Autenticación', () => {
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
       
       const callArgs = (globalThis.fetch as any).mock.calls[0];
-      expect(callArgs[0]).toBe('http://localhost:3000/api/auth/register');
+      expect(callArgs[0]).toBe('https://mivideoteca-backend-saperez.onrender.com/api/auth/register');
       expect(callArgs[1].method).toBe('POST');
       expect(callArgs[1].body).toBe(JSON.stringify({ email, password }));
     });
@@ -206,7 +210,7 @@ describe('API Service - Autenticación', () => {
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
       
       const callArgs = (globalThis.fetch as any).mock.calls[0];
-      expect(callArgs[0]).toBe('http://localhost:3000/api/movies');
+      expect(callArgs[0]).toBe('https://mivideoteca-backend-saperez.onrender.com/api/movies');
       expect(callArgs[1].method).toBe('GET');
       
       // Verificar que el header Authorization está presente
