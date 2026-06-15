@@ -17,6 +17,7 @@ vi.mock('./api.service', () => ({
     createMovie: vi.fn(),
     updateMovie: vi.fn(),
     deleteMovie: vi.fn(),
+    rateMovie: vi.fn(),
   }
 }));
 
@@ -219,6 +220,60 @@ describe('Movies Store (Svelte 5 Runes)', () => {
       expect(ok).toBe(false);
       expect(moviesStore.error).toBe('Forbidden');
       expect(moviesStore.mutating).toBe(false);
+    });
+  });
+
+  // ─── rateMovie ─────────────────────────────────────────────────
+  describe('rateMovie()', () => {
+    it('debería actualizar el rating de una película y llamar a la API', async () => {
+      // ARRANGE
+      const movieWithoutRating: Movie = { ...mockMovies[0], rating: 0 };
+      const movieWithRating: Movie = { ...movieWithoutRating, rating: 4 };
+
+      vi.mocked(api.getMovies).mockResolvedValue([movieWithoutRating]);
+      await moviesStore.loadMovies();
+      vi.mocked(api.rateMovie).mockResolvedValue(movieWithRating);
+
+      // ACT
+      const ok = await moviesStore.rateMovie(moviesStore.movies[0], 4);
+
+      // ASSERT
+      expect(api.rateMovie).toHaveBeenCalledWith('1', 4);
+      expect(ok).toBe(true);
+      expect(moviesStore.movies[0].rating).toBe(4);
+    });
+
+    it('debería rechazar ratings fuera de rango sin llamar a la API', async () => {
+      // ARRANGE
+      const movieWithoutRating: Movie = { ...mockMovies[0], rating: 0 };
+      vi.mocked(api.getMovies).mockResolvedValue([movieWithoutRating]);
+      await moviesStore.loadMovies();
+
+      // ACT
+      const ok = await moviesStore.rateMovie(moviesStore.movies[0], 6);
+
+      // ASSERT
+      expect(api.rateMovie).not.toHaveBeenCalled();
+      expect(ok).toBe(false);
+      expect(moviesStore.error).toBe('El rating debe ser un número entero entre 0 y 5');
+      expect(moviesStore.movies[0].rating).toBe(0);
+    });
+
+    it('debería revertir el rating si la API falla', async () => {
+      // ARRANGE
+      const movieWithRating: Movie = { ...mockMovies[0], rating: 2 };
+      vi.mocked(api.getMovies).mockResolvedValue([movieWithRating]);
+      await moviesStore.loadMovies();
+      vi.mocked(api.rateMovie).mockRejectedValue(new Error('Error al actualizar el rating'));
+
+      // ACT
+      const ok = await moviesStore.rateMovie(moviesStore.movies[0], 5);
+
+      // ASSERT
+      expect(api.rateMovie).toHaveBeenCalledWith('1', 5);
+      expect(ok).toBe(false);
+      expect(moviesStore.error).toBe('Error al actualizar el rating');
+      expect(moviesStore.movies[0].rating).toBe(2);
     });
   });
 });

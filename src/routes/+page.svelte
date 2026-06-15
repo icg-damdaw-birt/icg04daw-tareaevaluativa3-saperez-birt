@@ -80,6 +80,13 @@
     editingMovie = movie;
   }
 
+  // Califica película a través del store con optimistic update.
+  async function handleRate(movie: Movie, rating: number) {
+    feedbackMessage = null;
+    moviesStore.clearError();
+    await moviesStore.rateMovie(movie, rating);
+  }
+
   // Limpia el formulario lateral y vuelve al modo de creación.
   function handleCancelEdit() {
     editingMovie = null;
@@ -119,7 +126,7 @@
       {:else}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {#each moviesStore.movies as movie (movie.id)}
-            <MovieCard {movie} ondelete={handleDelete} onedit={handleEdit} />
+            <MovieCard {movie} ondelete={handleDelete} onedit={handleEdit} onrate={handleRate} />
           {/each}
         </div>
       {/if}
